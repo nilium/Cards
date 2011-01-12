@@ -125,16 +125,60 @@ NCard.eventHandlers = {
 	card_mousedown_front: function(event) {		
 		var card_jq = $(this);
 		var card = card_jq.data('card');
+		
+		event.stopPropagation();
+		
+		if (!card.canBePickedUp()) {
+			return false;
+		}
+		
+		NCard._hookupDragging(card);
+		return true;
 	},
 	
 	table_mouseup: function(event) {
+		console.log('mouse released');
 		
+		$(this).unbind('mouseup')
+			.unbind('mousemove');
 	},
 	
 	table_mousemove: function(event) {
+		var data = event.data;
+		var body = data.cardBody;
 		
+		body.offset({
+			left: event.pageX + data.offset.left,
+			top:  event.pageY + data.offset.top
+		});
 	}
 }
+
+NCard._hookupDragging = function(forCard) {
+	var body = forCard.divs.body;
+	var table = $('#table');
+	
+	var offset = body.offset();
+	
+	var data = {
+		card: forCard,
+		anchor: body.parent(),
+		cardBody: body,
+		anchor: body.parent(),
+		offset: {
+			left: offset.left - event.pageX,
+			top: offset.top - event.pageY
+		}
+	};
+	
+	body.detach()
+		.appendTo(table)
+		.offset(offset);
+	
+	table.bind('mousemove', data, NCard.eventHandlers.table_mousemove)
+		.bind('mouseup', data, NCard.eventHandlers.table_mouseup);
+}
+
 
 // methods
 NCard.prototype.getCardBody = function() {
