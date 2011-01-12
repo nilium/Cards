@@ -506,9 +506,9 @@ function loadDeck(deck) {
 			
 			top = card_jq.appendTo(top);
 			
+			card.enabled(true)
 			if (count == index) {
-				card.facing(true)
-					.enabled(true);
+				card.facing(true);
 			}
 		}
 	});
