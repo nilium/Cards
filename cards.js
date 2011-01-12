@@ -1,13 +1,46 @@
 var RULES={
+	// name of the game type
 	name: 'Klondike',
 	
+	// appends elements to the table, sets up the deck, and lays out
+	// the cards
+	setupTable: function(table) {
+		// TODO: move index.html table setup into here, build columns
+		// & deck in this method.
+	},
+	
+	/**
+		Determines if two cards follow one another in a given stack
+		to decide whether or not the stack is valid and is therefore
+		playable/can be lifted off the table.
+		For example, in solitaire, the rule would be that each card
+		above must be the number below it minus one, and that each
+		card alternates between red and black, as in this implementation.
+		
+		Must return either true or false.
+	**/
 	stackValidator: function(below, above) {
 		return (
 			below.getNumber() == (above.getNumber() + 1)
 			&& below.isRed() != above.isRed()
 		);
-	}
-}
+	},
+	
+	/**
+		Finds and returns all possible anchor points (jquery objects)
+		for the given card.  In solitaire, this would be either one
+		of the wells or a column that can take the card at the top
+		of its stack.
+		
+		RETURN
+			Should return a jQuery object with however many elements
+			there are that can act as anchors for the card to be
+			dropped onto.
+	**/
+	anchorsForCard: function(card) {
+		// TODO: return all possible anchors for a given card
+	},
+};
 
 /**
 	NDeck is a simple container for a deck of variable size (52 by default)
