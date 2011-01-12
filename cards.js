@@ -326,7 +326,7 @@ NCard.prototype.enabled = function(enable) {
 	);
 	
 	this._enabled = enable;
-	this._checkCallback();
+	this._checkEventHandlers();
 	
 	return this;
 }
@@ -455,13 +455,15 @@ NCard.prototype.facing = function(facing) {
 		detach.detach();
 		attach.prependTo(this.divs.card);
 		
-		this._checkCallback();
+		this._checkEventHandlers();
 	}
 	
 	return this;
 }
 
-NCard.prototype._checkCallback = function() {
+// determines if a method should have event handlers applied to it
+// and applies them where necessary
+NCard.prototype._checkEventHandlers = function() {
 	if (this._enabled) {
 		this.divs.body.unbind('mousedown');
 		if (this.facing()) {
