@@ -1,3 +1,7 @@
+/****
+	TODO: Delete this pile of crap once it's done being rewritten
+****/
+
 /*
 // ye olde deck script
 var prev = $('#waste>#spawn .cardContainer');
