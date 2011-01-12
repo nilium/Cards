@@ -7,7 +7,10 @@ function NDeck(size) {
 		size = 52;
 	}
 	
-	checkValue(size, isNumberCheck, isInRangeCheck(0, undefined, false))
+	assert(
+		checkValue(size, isNumberCheck, isInRangeCheck(0, undefined, false)),
+		"Size out of range"
+	);
 	
 	var cardIndices = new Array();
 	for(var index = 0; index < size; ++index) {
@@ -113,7 +116,10 @@ NCard.prototype.enabled = function(enable) {
 		return this._enabled;
 	}
 	
-	checkValue(enable, isBooleanCheck)
+	assert(
+		checkValue(enable, isBooleanCheck),
+		"Argument is not a boolean"
+	);
 	
 	this._enabled = enable;
 	if (enable) {
@@ -156,7 +162,10 @@ NCard.prototype.isStack = function() {
 	If this card is not beneath other cards, then this method will return true;
 **/
 NCard.prototype.validateStack = function(validator) {
-	checkValue(validator, isFunctionCheck);
+	assert(
+		checkValue(validator, isFunctionCheck),
+		"Validator is not a function"
+	);
 	
 	if (!this.isStack()) {
 		return true;
@@ -166,7 +175,10 @@ NCard.prototype.validateStack = function(validator) {
 	var above = below.children('.cardContainer');
 	while (below.is('.cardContainer') && above.is('.cardContainer')) {
 		var valid = validator(below, above);
-		checkValue(valid, isBooleanCheck);
+		assert(
+			checkValue(valid, isBooleanCheck),
+			"Validator returned non-boolean value"
+		);
 		
 		if (!res) {
 			return false;
@@ -184,7 +196,10 @@ NCard.prototype.facing = function(facing) {
 		return this._facing;
 	}
 	
-	checkValue(facing, isBooleanCheck);
+	assert(
+		checkValue(facing, isBooleanCheck),
+		"Argument is not a boolean"
+	);
 	
 	var body = this.divs.body;
 	
