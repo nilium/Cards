@@ -304,9 +304,16 @@ NCard.prototype._anchorTo = function(anchor, post, append) {
 	var oldOffset = body.offset();
 	var newOffset = NCard._offsetForAnchor(anchor);
 	
+	if (!body.parent().is('#table')) {
+		// if the card isn't already appended to the table, detach it
+		// and move it to the table to fix z-ordering
+		body.detach()
+			.appendTo($('#table'));
+	}
+	
 	body.offset(oldOffset)
 		.unbind('mousedown')
-		.animate(newOffset, 300,
+		.animate(newOffset, 100,
 			function() {
 				body.detach();
 				
