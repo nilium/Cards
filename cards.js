@@ -90,6 +90,14 @@ function NCard(cardIndex) {
 	// access to the instance of the card as a closure variable
 	this.divs.body.data('card', this);
 	
+	this.divs.front.find('.number').html(this.getTitle());
+	this.divs.front.addClass('c'+this.getTitle())
+					.addClass('s'+this._suit);
+	
+	if (this._red) {
+		this.divs.front.addClass('red');
+	}
+	
 	return this;
 }
 
