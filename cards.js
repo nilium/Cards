@@ -157,6 +157,26 @@ NCard.prototype.enabled = function(enable) {
 	return this;
 }
 
+// get the card above this card
+NCard.prototype.getNextCard = function() {
+	var card_jq = this.divs.body.children('.cardContainer');
+	if (card_jq.length == 1) {
+		return card_jq.data('card');
+	}
+	
+	return null;
+};
+
+// get the card below this card
+NCard.prototype.getPreviousCard = function() {
+	var card_jq = this.divs.body.parent('.cardContainer');
+	if (card_jq.length == 1) {
+		return card_jq.data('card');
+	}
+	
+	return null;
+};
+
 NCard.prototype.canBePickedUp = function() {
 	if (!this._enabled) {
 		return false;
