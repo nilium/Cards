@@ -119,6 +119,12 @@ NCard.eventHandlers = {
 			"Card not selected"
 		);
 		
+		event.stopPropagation();
+		
+		if (card.getNextCard() != null) {
+			return false;
+		}
+		
 		card.facing(true);
 	},
 	
@@ -158,6 +164,8 @@ NCard.eventHandlers = {
 				event.data.prevCard.enabled(true);
 			}
 		}
+		
+		event.stopPropagation();
 	},
 	
 	table_mousemove: function(event) {
@@ -168,6 +176,8 @@ NCard.eventHandlers = {
 			left: event.pageX + data.offset.left,
 			top:  event.pageY + data.offset.top
 		});
+		
+		event.stopPropagation();
 	}
 }
 
