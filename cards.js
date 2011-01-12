@@ -140,7 +140,7 @@ NCard.prototype.isRed = function() {
 };
 
 NCard.prototype.enabled = function(enable) {
-	if (enabled == undefined) {
+	if (enable == undefined) {
 		return this._enabled;
 	}
 	
