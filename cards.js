@@ -102,11 +102,16 @@ NCard.cardTemplate = {
 };
 
 NCard.eventHandlers = {
-	card_mousedown: function(event) {
+	card_mousedown_back: function(event) {
 		var card_jq = $(this);
 		var card = card_jq.data('card');
 		
 		
+	},
+	
+	card_mousedown_front: function(event) {		
+		var card_jq = $(this);
+		var card = card_jq.data('card');
 	},
 	
 	table_mouseup: function(event) {
@@ -150,9 +155,7 @@ NCard.prototype.enabled = function(enable) {
 	);
 	
 	this._enabled = enable;
-	if (enable) {
-		
-	}
+	this._checkCallback();
 	
 	return this;
 }
@@ -263,8 +266,26 @@ NCard.prototype.facing = function(facing) {
 		
 		detach.detach();
 		attach.prependTo(this.divs.card);
+		
+		this._checkCallback();
 	}
+	
+	return this;
 }
+
+NCard.prototype._checkCallback = function() {
+	if (this._enabled) {
+		this.divs.body.unbind('mousedown');
+		if (this.facing()) {
+			this.divs.body.bind('mousedown', NCard.eventHandlers.card_mousedown_front);
+		} else {
+			this.divs.body.bind('mousedown', NCard.eventHandlers.card_mousedown_back);
+		}
+	} else {
+		this.divs.body.unbind('mousedown');
+	}
+};
+
 
 
 // layout functions
