@@ -49,6 +49,8 @@ NDeck.prototype.shuffle = function() {
 		cards[swap_left]  = cards[swap_right];
 		cards[swap_right] = temp;
 	}
+	
+	return this;
 }
 
 NDeck.prototype.getCardAtIndex = function(index) {
