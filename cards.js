@@ -123,6 +123,21 @@ NCard.prototype.getCardBody = function() {
 	return this.divs.body;
 };
 
+NCard.prototype.getNumber = function() {
+	return this._number;
+};
+
+NCard.prototype.getTitle = function() {
+	return NCard.TITLES[this.getNumber()];
+};
+
+NCard.prototype.getSuit = function() {
+	return this._suit;
+};
+
+NCard.prototype.isRed = function() {
+	return this._red;
+};
 
 NCard.prototype.enabled = function(enable) {
 	if (enabled == undefined) {
