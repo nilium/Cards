@@ -1,0 +1,13 @@
+{
+  "name": "Cards",
+  "description": "Basic solitaire",
+  "version": "1",
+  "app": {
+    "launch": {
+      "local_path": "index.html"
+    }
+  },
+  
+  "permissions": [
+  ]
+}
