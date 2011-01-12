@@ -173,7 +173,7 @@ body {
 	cursor: default;
 }
 
-.red > .card .number {
+.red .number {
 	color: red;
 }
 
