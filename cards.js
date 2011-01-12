@@ -114,7 +114,12 @@ NCard.eventHandlers = {
 		var card_jq = $(this);
 		var card = card_jq.data('card');
 		
+		assert(
+			checkValue(card, isObjectCheck),
+			"Card not selected"
+		);
 		
+		card.facing(true);
 	},
 	
 	card_mousedown_front: function(event) {		
