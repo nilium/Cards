@@ -199,11 +199,18 @@ NCard.prototype.canBePickedUp = function() {
 	}
 	
 	var card_jq = this.getCardBody();
-	var parent = card_jq.closest('.cardContainer, .repository, .column, #deck, #spawn');
+	var root = card_jq.closest('.repository, .column, #deck, #spawn');
 	
-	if (parent.is('.repository')) {
-		
+	if (root.is('.repository, #spawn') && this.next() != null) {
+		return false;
 	}
+	
+	if (this.isStack() && !(root.is('.column')
+		&& this.validateStack(RULES.stackValidator))) {
+		return false;
+	}
+	
+	return true;
 }
 
 NCard.prototype.isStack = function() {
