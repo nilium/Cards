@@ -37,7 +37,7 @@ function isBooleanCheck(value) {
 }
 
 function isObjectCheck(value) {
-	return (typeof value == 'boolean');
+	return (typeof value == 'object');
 }
 
 function isFunctionCheck(value) {
