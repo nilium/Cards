@@ -145,7 +145,19 @@ NCard.eventHandlers = {
 		var anchor = event.data.anchor;
 		// TODO: check for new anchor (see cards_old.js for horrid implementation)
 		
-		event.data.card._anchorTo(anchor);
+		if (anchor == event.data.anchor && event.data.prevCard != null) {
+			event.data.card._anchorTo(anchor,
+				function() {
+					event.data.prevCard.enabled(true);
+					}
+				);
+		} else {
+			event.data.card._anchorTo(anchor);
+			if (event.data.prevCard != null) {
+				// enable the last card immediately
+				event.data.prevCard.enabled(true);
+			}
+		}
 	},
 	
 	table_mousemove: function(event) {
@@ -161,13 +173,15 @@ NCard.eventHandlers = {
 
 NCard._hookupDragging = function(forCard) {
 	var body = forCard.divs.body;
+	body.unbind('mousedown', NCard.eventHandlers.card_mousedown_front);
+	
 	var table = $('#table');
 	
 	var offset = body.offset();
 	
 	var data = {
 		card: forCard,
-		anchor: body.parent(),
+		prevCard: forCard.getPreviousCard(),
 		cardBody: body,
 		anchor: body.parent(),
 		offset: {
@@ -175,6 +189,10 @@ NCard._hookupDragging = function(forCard) {
 			top: offset.top - event.pageY
 		}
 	};
+	
+	if (data.prevCard != null) {
+		data.prevCard.enabled(false);
+	}
 	
 	body.detach()
 		.appendTo(table)
@@ -184,6 +202,10 @@ NCard._hookupDragging = function(forCard) {
 		.bind('mouseup', data, NCard.eventHandlers.table_mouseup);
 }
 
+// tweaks the offset for a given anchor - this is sort of a hack
+// that depends on knowledge of how the cards are laid out in
+// specific areas according to the CSS, and it could probably be
+// done better
 NCard._offsetForAnchor = function(anchor) {
 	var offset = anchor.offset();
 	var root = anchor.closest('.repository, .column, #deck, #spawn');
@@ -203,14 +225,37 @@ NCard._offsetForAnchor = function(anchor) {
 };
 
 // methods
-NCard.prototype._anchorTo = function(anchor, append) {
+
+// anchors a card to a specific element, where anchor is a jquery object,
+// post is a function or null, and append is true to append and false to
+// prepend the card to the element pointed to by the jquery object
+// post takes no arguments, and is called once the animation to move the
+// card into place has finished and the card has been re-anchored
+//
+// post = function() { ... }
+NCard.prototype._anchorTo = function(anchor, post, append) {
+	assert(
+		checkValue(anchor, isObjectCheck),
+		"anchor not provided"
+	);
+	
 	if (append == undefined) {
 		append = true;
+	} else {
+		assert(
+			checkValue(append, isBooleanCheck),
+			"Argument 'append' is not a boolean"
+		);
 	}
-	assert(
-		checkValue(append, isBooleanCheck),
-		"Argument 'append' is not a boolean"
-	);
+	
+	if (post == undefined) {
+		post = null;
+	} else if (post != null) {
+		assert(
+			checkValue(post, isFunctionCheck),
+			"Argument 'post' is not a function"
+		);
+	}
 	
 	var body = this.divs.body;
 	var oldOffset = body.offset();
@@ -231,6 +276,10 @@ NCard.prototype._anchorTo = function(anchor, append) {
 				body.css('left', 0)
 					.css('top', 0)
 					.bind('mousedown', NCard.eventHandlers.card_mousedown_front);
+				
+				if (post != null) {
+					post();
+				}
 			}
 		);
 };
@@ -328,6 +377,10 @@ NCard.prototype.isStack = function() {
 	must return false.
 	
 	If this card is not beneath other cards, then this method will return true;
+	
+	It's an arbitrary use of the word 'valid', but in this case it means
+	that the stack or cards are playable - so, if you cannot play a certain
+	stack, then it's invalid.  Again, arbitrary.
 **/
 NCard.prototype.validateStack = function(validator) {
 	assert(
@@ -338,6 +391,12 @@ NCard.prototype.validateStack = function(validator) {
 	var below = this;
 	var above = below.getNextCard();
 	while (below && above) {
+		if (!(below.enabled() && above.enabled())) {
+			// stacks with disabled cards in them are
+			// not considered valid stacks
+			return false;
+		}
+		
 		var valid = validator(below, above);
 		assert(
 			checkValue(valid, isBooleanCheck),
