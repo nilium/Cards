@@ -1,3 +1,14 @@
+var RULES={
+	name: 'Klondike',
+	
+	stackValidator: function(below, above) {
+		return (
+			below.getNumber() == (above.getNumber() + 1)
+			&& below.isRed() != above.isRed()
+		);
+	}
+}
+
 /**
 	NDeck is a simple container for a deck of variable size (52 by default)
 **/
