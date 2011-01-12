@@ -49,24 +49,30 @@ NDeck.prototype.getCardAtIndex = function(index) {
 	Card indices are assumed to be within the range of [0,51]
 **/
 function NCard(cardIndex) {
-	this._body = NCard.cardTemplate.body.clone();
-	this._face = NCard.cardTemplate.face.clone();
-	this._back = NCard.cardTemplate.back.clone();
+	{
+		var body = NCard.cardTemplate.body.clone();
+		this.divs = {
+			body: body,
+			card: body.children('.card'),
+			front: NCard.cardTemplate.front.clone(),
+			back: NCard.cardTemplate.back.clone()
+		};
+	}
 	
 	// default to showing the back
-	this._back.prependTo(this._body.children('.card'));
+	this.divs.card.prepend(this.divs.back);
 	
 	this._cardIndex = cardIndex;				// the index of the card [0,51]
 	this._suit = Math.floor(cardIndex / 13);	// the card suit, [0,3], e.g., spade, club, heart, diamond
 	this._red = this._suit > 1;					// whether or not the suit is red
 	this._number = cardIndex % 13;				// the card's number in the suit, [0..12] going ace, 2, 3, 4, .., 10, jack, queen, king
-	this._facing = false;						// whether or not the card face is visible
+	this._facing = false;						// whether or not the card front is visible
 	this._enabled = false;						// whether or not the card is enabled (disables event handling)
 	
 	// yay, circular references
 	// keeping this ref because the event handlers won't have
 	// access to the instance of the card as a closure variable
-	this._body.data('card', this);
+	this.divs.body.data('card', this);
 	
 	return this;
 }
@@ -74,8 +80,8 @@ function NCard(cardIndex) {
 NCard.TITLES = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 
 NCard.cardTemplate = {
-	body: $('<div class="cardContainer"><div class="card"></div></div>'),
-	face: $('<div class="front"><div class="number topLeft"></div><div class="center"></div><div class="number botRight"></div></div>'),
+	body: $('<div class="cardContainer flipped"><div class="card"></div></div>'),
+	front: $('<div class="front"><div class="number topLeft"></div><div class="center"></div><div class="number botRight"></div></div>'),
 	back: $('<div class="back"></div>'),
 };
 
@@ -98,7 +104,7 @@ NCard.eventHandlers = {
 
 // methods
 NCard.prototype.getCardBody = function() {
-	return this._body;
+	return this.divs.body;
 };
 
 
@@ -122,7 +128,7 @@ NCard.prototype.canBePickedUp = function() {
 		return false;
 	}
 	
-	var card_jq = this._body;
+	var card_jq = this.getCardBody();
 	var parent = card_jq.closest('.cardContainer, .repository, .column, #deck, #spawn');
 	
 	if (parent.is('.repository')) {
@@ -131,7 +137,7 @@ NCard.prototype.canBePickedUp = function() {
 }
 
 NCard.prototype.isStack = function() {
-	var card_jq = this._body;
+	var card_jq = this.getCardBody();
 	
 	if (card_jq.children('.cardContainer')) {
 		
@@ -156,7 +162,7 @@ NCard.prototype.validateStack = function(validator) {
 		return true;
 	}
 	
-	var below = this._body;
+	var below = this.getCardBody();
 	var above = below.children('.cardContainer');
 	while (below.is('.cardContainer') && above.is('.cardContainer')) {
 		var valid = validator(below, above);
@@ -180,22 +186,26 @@ NCard.prototype.facing = function(facing) {
 	
 	checkValue(facing, isBooleanCheck);
 	
-	var changed = (facing == this._facing);
+	var body = this.divs.body;
+	
+	var changed = (facing != this._facing);
 	if (changed) {
-		this._facing = facing;
-		
 		var detach, attach;
 		
+		this._facing = facing;
+		
 		if (facing) {
-			detach = this._back;
-			attach = this._front;
+			detach = this.divs.back;
+			attach = this.divs.front;
+			body.removeClass('flipped');
 		} else {
-			attach = this._back;
-			detach = this._front;
+			attach = this.divs.back;
+			detach = this.divs.front;
+			body.addClass('flipped');
 		}
 		
 		detach.detach();
-		attach.prependTo(this._body.children('.card'));
+		attach.prependTo(this.divs.card);
 	}
 }
 
@@ -217,15 +227,7 @@ function sizeColumns() {
 	});
 }
 
-
-// document
-
-$(document).ready(function() {
-	sizeColumns();
-	$(window).resize(sizeColumns);
-	
-	var deck = new NDeck();
-	
+function loadDeck(deck) {
 	var deckIndex = 0;
 	
 	$('.column').each(function(index, columnDOM) {
@@ -237,6 +239,21 @@ $(document).ready(function() {
 			var card_jq = card.getCardBody();
 			
 			top = card_jq.appendTo(top);
+			
+			if (count == index) {
+				card.facing(true);
+			}
 		}
 	});
+}
+
+// document
+
+$(document).ready(function() {
+	sizeColumns();
+	$(window).resize(sizeColumns);
+	
+	var deck = new NDeck();
+	
+	loadDeck(deck);
 });
