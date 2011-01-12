@@ -141,6 +141,11 @@ NCard.eventHandlers = {
 		
 		$(this).unbind('mouseup')
 			.unbind('mousemove');
+		
+		var anchor = event.data.anchor;
+		// TODO: check for new anchor (see cards_old.js for horrid implementation)
+		
+		event.data.card._anchorTo(anchor);
 	},
 	
 	table_mousemove: function(event) {
@@ -179,8 +184,58 @@ NCard._hookupDragging = function(forCard) {
 		.bind('mouseup', data, NCard.eventHandlers.table_mouseup);
 }
 
+NCard._offsetForAnchor = function(anchor) {
+	var offset = anchor.offset();
+	var root = anchor.closest('.repository, .column, #deck, #spawn');
+	
+	if (root.is('#spawn')) {
+		offset.left += 32;
+	} else if (root.is('.column') && anchor.is('.cardContainer')) {
+		var card = anchor.data('card');
+		if (card.facing()) {
+			offset.top += 18;
+		} else {
+			offset.top += 9;
+		}
+	}
+	
+	return offset;
+};
 
 // methods
+NCard.prototype._anchorTo = function(anchor, append) {
+	if (append == undefined) {
+		append = true;
+	}
+	assert(
+		checkValue(append, isBooleanCheck),
+		"Argument 'append' is not a boolean"
+	);
+	
+	var body = this.divs.body;
+	var oldOffset = body.offset();
+	var newOffset = NCard._offsetForAnchor(anchor);
+	
+	body.offset(oldOffset)
+		.unbind('mousedown')
+		.animate(newOffset, 300,
+			function() {
+				body.detach();
+				
+				if (append) {
+					body.appendTo(anchor);
+				} else {
+					body.prependTo(anchor);
+				}
+				
+				body.css('left', 0)
+					.css('top', 0)
+					.bind('mousedown', NCard.eventHandlers.card_mousedown_front);
+			}
+		);
+};
+
+
 NCard.prototype.getCardBody = function() {
 	return this.divs.body;
 };
