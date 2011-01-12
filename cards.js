@@ -298,7 +298,8 @@ function loadDeck(deck) {
 			top = card_jq.appendTo(top);
 			
 			if (count == index) {
-				card.facing(true);
+				card.facing(true)
+					.enabled(true);
 			}
 		}
 	});
