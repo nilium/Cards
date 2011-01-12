@@ -213,25 +213,21 @@ NCard.prototype.validateStack = function(validator) {
 		"Validator is not a function"
 	);
 	
-	if (!this.isStack()) {
-		return true;
-	}
-	
-	var below = this.getCardBody();
-	var above = below.children('.cardContainer');
-	while (below.is('.cardContainer') && above.is('.cardContainer')) {
+	var below = this;
+	var above = below.getNextCard();
+	while (below && above) {
 		var valid = validator(below, above);
 		assert(
 			checkValue(valid, isBooleanCheck),
 			"Validator returned non-boolean value"
 		);
 		
-		if (!res) {
+		if (!valid) {
 			return false;
 		}
 		
 		below = above;
-		above = below.children('.cardContainer');
+		above = below.getNextCard();
 	}
 	
 	return true;
