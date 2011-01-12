@@ -193,9 +193,7 @@ NCard.prototype.canBePickedUp = function() {
 NCard.prototype.isStack = function() {
 	var card_jq = this.getCardBody();
 	
-	if (card_jq.children('.cardContainer')) {
-		
-	}
+	return (card_jq.children('.cardContainer').length > 0);
 }
 
 /**
