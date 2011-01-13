@@ -491,7 +491,7 @@ NCard.prototype.canBePickedUp = function() {
 	var card_jq = this.getCardBody();
 	var root = card_jq.closest('.repository, .column, #deck, #spawn');
 	
-	if (root.is('.repository, #spawn') && this.next() != null) {
+	if (root.is('.repository, #spawn') && (this.getNextCard() != null || this.isStack())) {
 		return false;
 	}
 	
