@@ -38,7 +38,60 @@ var RULES={
 			dropped onto.
 	**/
 	anchorsForCard: function(card) {
-		// TODO: return all possible anchors for a given card
+		var topMapping = function(index, domElem) {
+			var top = $(this).find('.cardContainer').last();
+			
+			if (top.length == 1) {
+				return top.get();
+			}
+			
+			return this;
+		};
+		
+		var num = card.getNumber();
+		var suit = card.getSuit();
+		var red = card.isRed();
+		
+		var columns = $('.column');
+		
+		var results = columns.map(topMapping).filter(
+			function() {
+				var anchor = $(this);
+				if (anchor.is('.column')) {
+					return num == 12;
+				}
+				
+				var anchorCard = anchor.data('card');
+				if (anchorCard.getNumber() == num + 1 && anchorCard.isRed() != red) {
+					return true;
+				}
+				
+				return false;
+			}
+		);
+		
+		if (!card.isStack()) {
+			var repos = $('.repository');
+			repos = repos.map(topMapping).filter(
+				function() {
+					var anchor = $(this);
+					
+					if (anchor.is('.repository')) {
+						return num == 0;
+					}
+					
+					var anchorCard = anchor.data('card');
+					if (anchorCard.getNumber() == num - 1 && anchorCard.getSuit() == suit) {
+						return true;
+					}
+					
+					return false;
+				}
+			);
+			results = results.add(repos);
+		}
+		
+		return results;
 	},
 };
 
