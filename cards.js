@@ -616,13 +616,12 @@ function sizeColumns() {
 	var colContainer = $('#columns');
 	var columns = colContainer.children('.column');
 	var width = Math.floor((colContainer.width() - (COLUMN_WIDTH * 7)) / 8);
-	columns.each(function(index, column) {
-		var col = $(column);
+	columns.each(function(index, columnDOM) {
 		var moveTo = {
 			left: width * (index + 1) + index * COLUMN_WIDTH,
 			top: 0
 		};
-		col.css('left', moveTo.left+'px')
+		$(this).css('left', moveTo.left+'px')
 			.css('top', '0px');
 	});
 }
@@ -631,9 +630,7 @@ function loadDeck(deck) {
 	var deckIndex = 0;
 	
 	$('.column').each(function(index, columnDOM) {
-		var column = $(columnDOM);
-		
-		var top = column;
+		var top = $(this);
 		for (var count = 0; count <= index; ++count, ++deckIndex) {
 			var card = new NCard(deck.getCardAtIndex(deckIndex));
 			var card_jq = card.getCardBody();
