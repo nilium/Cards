@@ -52,9 +52,9 @@ body {
 	-moz-border-radius: 8px;
 	border-radius: 8px;
 	border: 2px solid rgba(255,255,255,1);
-	-webkit-box-shadow: 0px 2px 7px rgba(0,0,0,0.4);
-	-moz-box-shadow: 0px 2px 7px rgba(0,0,0,0.4);
-	box-shadow: 0px 2px 7px rgba(0,0,0,0.4);
+	-webkit-box-shadow: 0px 1px 4px rgba(0,0,0,0.5);
+	-moz-box-shadow: 0px 1px 4px rgba(0,0,0,0.5);
+	box-shadow: 0px 1px 4px rgba(0,0,0,0.5);
 	-webkit-transition: border 130ms linear;
 	-moz-transition: border 130ms ease-in-out;
 	transition: border 130ms ease-in-out;
