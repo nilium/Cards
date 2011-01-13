@@ -5,8 +5,197 @@ var RULES={
 	// appends elements to the table, sets up the deck, and lays out
 	// the cards
 	setupTable: function(table) {
-		// TODO: move index.html table setup into here, build columns
-		// & deck in this method.
+		// layout
+		function sizeColumns() {
+			var COLUMN_WIDTH=96;
+			var colContainer = $('#columns');
+			var columns = colContainer.children('.column');
+			var width = Math.floor((colContainer.width() - (COLUMN_WIDTH * 7)) / 8);
+			columns.each(function(index, columnDOM) {
+				var moveTo = {
+					left: width * (index + 1) + index * COLUMN_WIDTH,
+					top: 0
+				};
+				$(this).css('left', moveTo.left+'px')
+					.css('top', '0px');
+			});
+		}
+		
+		// create deck
+		var deck = new NDeck(52);
+		var deckIndex = 0;
+		deck.shuffle();
+		
+		
+		// repos
+		{
+			var repos = $('<div id="repositories"></div>');
+			var repo = $('<div class="repository"></div>');
+			var rightness = 16;
+			for (var repoIndex = 0; repoIndex < 4; ++repoIndex, rightness += 126) {
+				var temp = repoIndex < 4 ? repo.clone() : null;
+				repos.append(repo.css('right', rightness));
+				repo = temp;
+			}
+			
+			table.append(repos);
+		} // repos end
+		
+		
+		// columns
+		{
+			var column = $('<div class="column"></div>');
+			var columns = $('<div id="columns" style="position:absolute;left:0px;right:0px;top:202px;bottom:8px"></div>');
+			for (var columnIndex = 0; columnIndex < 7; ++columnIndex) {
+				var temp = columnIndex < 7 ? column.clone() : null;
+			
+				columns.append(column);
+			
+				// unload cards
+				var top = column;
+				for (var cardIndex = 0; cardIndex <= columnIndex; ++cardIndex, ++deckIndex) {
+					var card = new NCard(deck.getCardAtIndex(deckIndex));
+					var card_jq = card.getCardBody();
+
+					top = card_jq.appendTo(top);
+
+					card.enabled(true);
+					if (cardIndex == columnIndex) {
+						card.facing(true);
+					}
+				}
+			
+				column = temp;
+			}
+			
+			table.append(columns);
+		} // columns end
+		
+		
+		// build the deck
+		{
+			var waste = $('<div id="waste"><div id="deckContainer"><div class="circle"></div><div id="deck"></div></div><div id="spawn"></div></div>');
+			var waste_deck = waste.find('#deck');
+			var waste_spawn = waste.children('#spawn');
+			var waste_trash = $('<div class="trash"></div>');
+			
+			{
+				var top = waste_deck;
+				for (; deckIndex < 52; ++deckIndex) {
+					var card = new NCard(deck.getCardAtIndex(deckIndex));
+					var body = card.getCardBody();
+					
+					top = body.appendTo(top);
+				}
+			}
+			
+			var data = {
+				divs: {
+					waste: waste,
+					deck:  waste_deck,
+					spawn: waste_spawn,
+					trashTemp: waste_trash
+				},
+				
+				waiting: 0,
+				needToFlipDeck: false,
+				bottom: null,
+				
+				popSpawnCards: function() {
+					var spawnBottom = this.divs.spawn.children('.cardContainer');
+					if (spawnBottom.length == 0) {
+						return;
+					}
+					var spawns = this.divs.spawn.find('.cardContainer');
+					
+					spawnBottom.detach();
+					
+					var trash = this.divs.trashTemp.clone();
+					trash.append(spawnBottom.clone(false));
+					
+					spawns = spawns.detach().get();
+					for (var index in spawns) {
+						var spawn = $(spawns[index]);
+						if (this.bottom == null) {
+							this.bottom = spawn;
+						} else {
+							this.bottom = spawn.append(this.bottom);
+						}
+						spawn.data('card').enabled(false).facing(false);
+					}
+					
+					trash.prependTo(this.divs.waste).animate({'opacity':0}, 100, function(){$(this).remove();});
+				},
+				
+				pullCards: function(number) {
+					var top = this.divs.deck.find('.cardContainer').last();
+					if (top.length == 0) {
+						return;
+					}
+					
+					var newTop = this.divs.spawn;
+					this.popSpawnCards();
+					
+					var leftStart = -109;
+					while (number > 0 && top.length == 1) {
+						var parent = top.parent('.cardContainer');
+						
+						top.data('card').facing(true);
+						newTop = top.detach().appendTo(newTop).css('left', leftStart);
+						top = parent;
+						
+						leftStart = -32;
+						--number;
+					}
+					
+					var cards = this.divs.spawn.find('.cardContainer');
+					this.waiting += cards.length;
+					var handler = this;
+					cards.css('opacity', 0).animate({'left': 0, 'opacity': 1}, 140, function() {
+						$(this).data('card').enabled(true);
+						handler.waiting -= 1;
+					});
+					
+					this.needToFlipDeck = (this.divs.deck.children('.cardContainer').length == 0);
+				},
+				
+				resetDeck: function() {
+					this.popSpawnCards();
+					
+					if (this.bottom != null) {
+						this.bottom.appendTo(this.divs.deck);
+						this.bottom = null;
+					}
+					
+					this.needToFlipDeck = false;
+					return;
+				}
+			};
+			
+			waste_deck.click(data, function(event) {
+				event.stopPropagation();
+				
+				if (event.data.waiting > 0) {
+					return false;
+				}
+				
+				var deckHandler = event.data;
+				
+				if (deckHandler.needToFlipDeck) {
+					deckHandler.resetDeck();
+					return true;
+				}
+				
+				deckHandler.pullCards(3);
+			});
+			
+			table.prepend(waste);
+			
+		} // deck end
+		
+		// resizing
+		sizeColumns();
+		$(window).resize(sizeColumns);
 	},
 	
 	/**
@@ -310,7 +499,10 @@ NCard._offsetForAnchor = function(anchor) {
 	var offset = anchor.offset();
 	var root = anchor.closest('.repository, .column, #deck, #spawn');
 	
-	if (root.is('#spawn')) {
+	if (anchor.is('.repository')) {
+		offset.top += 5;
+		offset.left += 5;
+	} else if (root.is('#spawn')) {
 		offset.left += 32;
 	} else if (root.is('.column') && anchor.is('.cardContainer')) {
 		var card = anchor.data('card');
@@ -405,7 +597,7 @@ NCard.prototype._anchorTo = function(anchor, post, append) {
 	
 	body.offset(oldOffset)
 		.unbind('mousedown')
-		.animate(newOffset, 100,
+		.animate(newOffset, 150,
 			function() {
 				body.detach();
 				
@@ -609,50 +801,8 @@ NCard.prototype._checkEventHandlers = function() {
 };
 
 
-
-// layout functions
-function sizeColumns() {
-	var COLUMN_WIDTH=106;
-	var colContainer = $('#columns');
-	var columns = colContainer.children('.column');
-	var width = Math.floor((colContainer.width() - (COLUMN_WIDTH * 7)) / 8);
-	columns.each(function(index, columnDOM) {
-		var moveTo = {
-			left: width * (index + 1) + index * COLUMN_WIDTH,
-			top: 0
-		};
-		$(this).css('left', moveTo.left+'px')
-			.css('top', '0px');
-	});
-}
-
-function loadDeck(deck) {
-	var deckIndex = 0;
-	
-	$('.column').each(function(index, columnDOM) {
-		var top = $(this);
-		for (var count = 0; count <= index; ++count, ++deckIndex) {
-			var card = new NCard(deck.getCardAtIndex(deckIndex));
-			var card_jq = card.getCardBody();
-			
-			top = card_jq.appendTo(top);
-			
-			card.enabled(true);
-			if (count == index) {
-				card.facing(true);
-			}
-		}
-	});
-}
-
 // document
 
 $(document).ready(function() {
-	sizeColumns();
-	$(window).resize(sizeColumns);
-	
-	var deck = new NDeck();
-	deck.shuffle();
-	
-	loadDeck(deck);
+	RULES.setupTable($('body>#table'));
 });
