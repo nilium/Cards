@@ -176,6 +176,7 @@ function NCard(cardIndex) {
 	// access to the instance of the card as a closure variable
 	this.divs.body.data('card', this);
 	
+	// set up CSS for the card
 	this.divs.front.find('.number').html(this.getTitle());
 	this.divs.front.addClass('c'+this.getTitle())
 					.addClass('s'+this._suit);
