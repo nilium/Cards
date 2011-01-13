@@ -235,17 +235,20 @@ NCard.eventHandlers = {
 		$(this).unbind('mouseup')
 			.unbind('mousemove');
 		
-		var anchor = event.data.anchor;
-		// TODO: check for new anchor (see cards_old.js for horrid implementation)
+		var card = event.data.card;
+		var body = event.data.cardBody;
+		
+		var possibleAnchors = RULES.anchorsForCard(event.data.card);
+		anchor = card._pickIdealAnchor(possibleAnchors, event.data.anchor);
 		
 		if (anchor == event.data.anchor && event.data.prevCard != null) {
-			event.data.card._anchorTo(anchor,
+			card._anchorTo(anchor,
 				function() {
 					event.data.prevCard.enabled(true);
 					}
 				);
 		} else {
-			event.data.card._anchorTo(anchor);
+			card._anchorTo(anchor);
 			if (event.data.prevCard != null) {
 				// enable the last card immediately
 				event.data.prevCard.enabled(true);
@@ -321,7 +324,42 @@ NCard._offsetForAnchor = function(anchor) {
 	return offset;
 };
 
+NCard._rectForElem = function(elem) {
+	return new NRect(elem.offset(), elem.width(), elem.height());
+}
+
+
 // methods
+
+// iterates over a number of anchors (including its original anchor)
+// and picks the one most ideal to be dropped on, or returns null if
+// none work
+NCard.prototype._pickIdealAnchor = function(anchors, _default) {
+	if (_default == undefined) {
+		_default = null;
+	}
+	
+	var cardRect = NCard._rectForElem(this.divs.body);
+	var rankingArea = 400;
+	if (_default != null) {
+		var defaultArea = NCard._rectForElem(_default).intersection(cardRect).area();
+		rankingArea = Math.min(rankingArea, defaultArea);
+	}
+	var result = _default;
+	
+	anchors.each(function () {
+		var anchor = $(this);
+		var aRect = NCard._rectForElem(anchor);
+		var area = aRect.intersection(cardRect).area();
+		
+		if (area > rankingArea) {
+			rankingArea = area;
+			result = anchor;
+		}
+	});
+	
+	return result;
+}
 
 // anchors a card to a specific element, where anchor is a jquery object,
 // post is a function or null, and append is true to append and false to
