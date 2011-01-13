@@ -652,6 +652,7 @@ $(document).ready(function() {
 	$(window).resize(sizeColumns);
 	
 	var deck = new NDeck();
+	deck.shuffle();
 	
 	loadDeck(deck);
 });
