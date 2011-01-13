@@ -158,7 +158,7 @@ NRect.prototype.intersection = function(other) {
 	// note: if no intersection, the resulting width and height will be zero
 	var left, top, width, height;
 	left = Math.max(this._left, other.left());
-	top = Math.max(this._top, other.top);
+	top = Math.max(this._top, other.top());
 	width = Math.max(Math.min(this.right(), other.right()) - left, 0);
 	height = Math.max(Math.min(this.bottom(), other.bottom()) - top, 0);
 	return new NRect(left, top, width, height);
